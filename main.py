@@ -1,81 +1,65 @@
+import streamlit as st
 import pandas as pd
-import random
+import altair as alt
 
-# 실제 영화 리스트 (장르별 일부 예시)
-movies = {
-    "Action": [
-        "Inception", "The Dark Knight", "Mad Max: Fury Road", "John Wick", "Gladiator",
-        "Die Hard", "The Avengers", "Black Panther", "The Batman", "Top Gun: Maverick",
-        "Mission: Impossible – Fallout", "Skyfall", "The Matrix", "Avengers: Endgame",
-        "The Bourne Ultimatum", "Iron Man", "Spider-Man: No Way Home", "Logan", "300", "Fast & Furious 7"
-    ],
-    "Comedy": [
-        "The Hangover", "Superbad", "Mean Girls", "21 Jump Street", "Crazy Rich Asians",
-        "Home Alone", "Zombieland", "The Mask", "Pitch Perfect", "Bridesmaids",
-        "Step Brothers", "Juno", "Ghostbusters", "Borat", "The Intern",
-        "Ted", "Mrs. Doubtfire", "The 40-Year-Old Virgin", "Rush Hour", "Anchorman"
-    ],
-    "Drama": [
-        "Forrest Gump", "The Shawshank Redemption", "Fight Club", "The Godfather", "Titanic",
-        "The Green Mile", "Whiplash", "A Beautiful Mind", "Good Will Hunting", "Joker",
-        "Parasite", "12 Years a Slave", "The Pursuit of Happyness", "The Revenant", "American Beauty",
-        "The Social Network", "The Pianist", "Spotlight", "Marriage Story", "The Wolf of Wall Street"
-    ],
-    "Sci-Fi": [
-        "Interstellar", "Avatar", "Blade Runner 2049", "Ex Machina", "The Martian",
-        "Dune", "Arrival", "Jurassic Park", "Edge of Tomorrow", "Minority Report",
-        "E.T.", "Ready Player One", "The Fifth Element", "I, Robot", "The Matrix Reloaded",
-        "Star Wars: A New Hope", "Star Wars: The Empire Strikes Back", "The Terminator", "Rogue One", "A.I. Artificial Intelligence"
-    ],
-    "Romance": [
-        "La La Land", "The Notebook", "Pride and Prejudice", "About Time", "Notting Hill",
-        "Love Actually", "Before Sunrise", "Titanic", "Pretty Woman", "Crazy Stupid Love",
-        "500 Days of Summer", "Me Before You", "The Fault in Our Stars", "The Holiday", "Begin Again",
-        "A Star Is Born", "To All the Boys I've Loved Before", "Dear John", "The Proposal", "Call Me by Your Name"
-    ],
-    "Thriller": [
-        "Se7en", "Gone Girl", "Prisoners", "The Silence of the Lambs", "Shutter Island",
-        "Memento", "The Girl with the Dragon Tattoo", "Zodiac", "Nightcrawler", "The Prestige",
-        "Split", "The Sixth Sense", "Oldboy", "No Country for Old Men", "Enemy",
-        "Get Out", "Black Swan", "Fight Club", "The Departed", "Tenet"
-    ],
-    "Horror": [
-        "The Conjuring", "It", "A Quiet Place", "Hereditary", "The Exorcist",
-        "The Ring", "The Babadook", "Annabelle", "Insidious", "The Blair Witch Project",
-        "Scream", "Us", "Sinister", "Midsommar", "The Shining",
-        "Paranormal Activity", "Saw", "Carrie", "Get Out", "Texas Chainsaw Massacre"
-    ],
-    "Animation": [
-        "Toy Story", "Finding Nemo", "The Lion King", "Shrek", "Up",
-        "Inside Out", "Coco", "Frozen", "Zootopia", "Moana",
-        "How to Train Your Dragon", "The Incredibles", "Encanto", "Spirited Away", "Monsters, Inc.",
-        "Kung Fu Panda", "Ratatouille", "Despicable Me", "Big Hero 6", "Soul"
-    ],
-    "Adventure": [
-        "Indiana Jones", "Pirates of the Caribbean", "Jurassic World", "King Kong", "The Jungle Book",
-        "The Lord of the Rings: The Fellowship of the Ring", "The Hobbit", "National Treasure", "Life of Pi", "Avatar: The Way of Water",
-        "Jumanji", "The Mummy", "The Lost City", "The Goonies", "Uncharted",
-        "Cast Away", "The Revenant", "Into the Wild", "The Secret Life of Walter Mitty", "The Hunger Games"
-    ],
-    "Fantasy": [
-        "Harry Potter and the Sorcerer’s Stone", "The Lord of the Rings: The Return of the King", "Pan’s Labyrinth", "Doctor Strange", "The Shape of Water",
-        "Alice in Wonderland", "Fantastic Beasts", "Maleficent", "Enchanted", "The Chronicles of Narnia",
-        "Hocus Pocus", "The Golden Compass", "Percy Jackson & the Olympians", "Eragon", "Beasts of the Southern Wild",
-        "Stardust", "The Witcher", "Willow", "The NeverEnding Story", "Peter Pan"
-    ]
-}
+st.set_page_config(page_title="🎬 영화 평점 데이터 분석", page_icon="🎥", layout="centered")
 
-# 데이터프레임 생성
-records = []
-for genre, titles in movies.items():
-    for title in titles:
-        records.append({
-            "Title": title,
-            "Genre": genre,
-            "Rating": round(random.uniform(3.0, 5.0), 1),
-            "Reviews": random.randint(200, 20000)
-        })
+st.title("🎬 실제 영화 기반 평점 분석 대시보드 (경량 버전)")
+st.markdown("""
+이 웹앱은 **실제 영화 제목**을 사용한 가상 평점 데이터를 분석합니다.  
+Streamlit Cloud에서도 **빠르게 실행되도록 최적화**된 버전입니다.
+""")
 
-df = pd.DataFrame(records)
-df.to_csv("movie_ratings_real.csv", index=False)
-print("✅ 'movie_ratings_real.csv' 생성 완료!")
+uploaded = st.file_uploader("📂 CSV 파일 업로드 (movie_ratings_small.csv)", type=["csv"])
+
+if uploaded:
+    df = pd.read_csv(uploaded)
+else:
+    df = pd.read_csv("movie_ratings_small.csv")
+
+# 데이터 미리보기
+st.subheader("🔎 데이터 미리보기")
+st.dataframe(df.head(), use_container_width=True)
+
+# 장르 선택
+genres = sorted(df["Genre"].unique())
+selected_genre = st.selectbox("🎭 장르 선택", genres)
+top_n = st.slider("표시할 영화 수", 3, 10, 5)
+
+# 장르별 평균 평점
+st.markdown("## ⭐ 장르별 평균 평점")
+avg_rating = df.groupby("Genre")["Rating"].mean().reset_index().sort_values("Rating", ascending=False)
+
+chart1 = (
+    alt.Chart(avg_rating)
+    .mark_bar(cornerRadiusTopLeft=5, cornerRadiusTopRight=5)
+    .encode(
+        x=alt.X("Rating:Q", title="평균 평점"),
+        y=alt.Y("Genre:N", sort="-x", title="장르"),
+        color=alt.Color("Rating:Q", scale=alt.Scale(scheme="blues")),
+        tooltip=["Genre", "Rating"]
+    )
+    .properties(width=700, height=400)
+)
+st.altair_chart(chart1, use_container_width=True)
+
+# 선택된 장르의 상위 영화 표시
+st.markdown(f"## 🎥 {selected_genre} 장르의 인기 영화 TOP {top_n}")
+filtered = df[df["Genre"] == selected_genre].sort_values("Rating", ascending=False).head(top_n)
+st.dataframe(filtered, use_container_width=True)
+
+chart2 = (
+    alt.Chart(filtered)
+    .mark_bar(cornerRadiusTopLeft=5, cornerRadiusTopRight=5)
+    .encode(
+        x=alt.X("Rating:Q", title="평점"),
+        y=alt.Y("Title:N", sort="-x", title="영화 제목"),
+        color=alt.Color("Rating:Q", scale=alt.Scale(scheme="orangered")),
+        tooltip=["Title", "Rating", "Reviews"]
+    )
+    .properties(width=700, height=350)
+)
+st.altair_chart(chart2, use_container_width=True)
+
+st.markdown("---")
+st.caption("© 2025 데이터과학·머신러닝 수행평가 예시 — 실제 영화 기반 경량 버전 🎓")
