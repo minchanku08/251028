@@ -133,5 +133,12 @@ st.altair_chart(chart2, use_container_width=True)
 st.markdown("---")
 with st.expander("ℹ️ 프로젝트 설명"):
     st.markdown("""
-   
+    **프로젝트 주제:** 실제 영화 데이터를 이용한 장르별 평점 분석  
+    **기술 스택:** Streamlit, Pandas, Altair  
+    **주요 기능:**  
+    - 장르별 평균 평점 시각화  
+    - 선택한 장르의 영화 순위 표시  
+    - 자동 데이터 생성 기능으로 Streamlit Cloud에서도 바로 작동  
+    """)
+
 st.caption("© 2025 데이터과학·머신러닝 수행평가 예시 — 자동 실행형 Streamlit 앱 🎓")
